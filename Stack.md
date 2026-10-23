@@ -1,4 +1,4 @@
-# 栈
+# 栈与队列
 ## 26.10.14 今日重点：矩阵查找、栈、字符串解码、C++基础语法
 栈的后进先出、双栈模拟、字符串遍历、字符判断
 ### 基础知识
@@ -153,3 +153,89 @@ public:
     }
 };
 ```
+### LeetCode 739 — Daily Temperatures（每日温度）
+给定数组temperatures，对于每一天，找到未来第一个温度比当天高的日期相隔多少天，如果未来没有更高温度则为0
+
+核心思路：**单调栈**。使用栈保存还没有找到更高温度的日期下标，栈空则**下标**直接入栈，如果当前温度不高于
+栈顶下标对应的温度则当前下标入栈
+```
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& temperatures) {
+        int n = temperatures.size();
+        vector<int> answer(n, 0);    //该数组有n个元素，初始值为0
+        stack<int> st;
+
+        for (int i = 0; i < n; i++) {
+            while (!st.empty() &&
+                   temperatures[i] > temperatures[st.top()]) {
+                int index = st.top();
+                st.pop();
+                answer[index] = i - index;
+            }
+
+            st.push(i);
+        }
+        return answer;
+    }
+};
+```
+### LeetCode 239 — Sliding Window Maximum（滑动窗口最大值）
+给定数组 nums 和窗口大小 k，窗口从数组左侧向右移动，每次输出窗口中的最大值。
+
+核心思路：**单调双端队列**,保存数组下标，让队列中的下标对应的数值从头到队尾递减。每次处理下标 i：
+如果队头下标不在当前窗口中，就从队头删除；如果队尾对应的数值小于等于当前数值，就从队尾删除。
+当窗口形成后，队头对应的值就是当前窗口的最大值
+```
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        deque<int> dq;        
+        vector<int> answer;
+
+        for (int i = 0; i < (int)nums.size(); i++) {
+            // 删除已经离开窗口的下标
+            while (!dq.empty() && dq.front() <= i - k) {
+                dq.pop_front();
+            }
+
+            // 删除不可能成为最大值的下标
+            while (!dq.empty() && nums[dq.back()] <= nums[i]) {
+                dq.pop_back();
+            }
+
+            dq.push_back(i);
+
+            // 窗口长度达到 k 后，记录最大值
+            if (i >= k - 1) {
+                answer.push_back(nums[dq.front()]);
+            }
+        }
+        return answer;
+    }
+};
+```
+注意：
+- deque 是双端队列，可以在队头和队尾插入、删除元素。
+- dq.front() 访问队头，dq.back() 访问队尾。
+- pop_front() 删除队头，pop_back() 删除队尾。
+- 队列保存下标是为了判断元素是否过期，以及比较数组中的实际值。
+- 队列不是保存窗口里的所有元素，而是保存有可能成为最大值的候选元素。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
