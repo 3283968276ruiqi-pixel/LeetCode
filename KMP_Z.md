@@ -157,6 +157,163 @@ else
 ```
 注意：利用DP能降低时间复杂度，long long存储较大的整数结果
 
+### 补充Z函数和后缀自动机
+Z函数：对于字符串S，从每个位置i开始的后缀与S本身相比有多长的前缀是相同的
+
+Z函数核心原理：维护一个区间[l,r]，表示当前已经找到的、与字符串前缀匹配的最靠右的区间，即
+
+s[l...r]=s[0...r-l]
+
+当我们计算z[i]时，分两种情况：
+
+1.如果i>r，当前位置已经超出了之前匹配区间。
+
+```
+while (i + z[i] < n && s[z[i]] == s[i + z[i]])
+{
+    z[i]++;
+}
+```
+
+2.i在l和r中间
+```
+if (i <= r)
+{
+    z[i] = min(r - i + 1, z[i - l]);
+}
+```
+
+还有更新l、r区间的代码：
+```
+if (i + z[i] - 1 > r)
+{
+l = i;
+r = i + z[i] - 1;
+}
+
+```
+
+***后缀自动机（简称SAM）***：能把一个字符串的所有不同子串的信息压缩到一个有限状态自动机中，从而高效地解决字符串匹配、不同子串计数、最长公共子串、最长重复字串等问题
+
+核心价值：用相对较少的状态，表示原字符串的所有不同子串
+
+1.状态state：后缀自动机中的每个状态都代表一组具有相同endpos的子串（是一组子串的集合）
+
+2.转移Transition:每个状态可以通过字符转移到另一个状态
+
+SAM的经典构建模板：
+```
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <cstring>
+using namespace std;
+
+const int MAXN = 200005;
+
+struct State
+{
+    int len;
+    int link;
+    int next[26];
+};
+
+State st[MAXN];
+int sz, last;
+
+void init()
+{
+    sz = 1;
+    last = 0;
+
+    st[0].len = 0;
+    st[0].link = -1;
+    memset(st[0].next, -1, sizeof(st[0].next));
+}
+
+void extend(char ch)
+{
+    int c = ch - 'a';
+
+    int cur = sz++;
+    st[cur].len = st[last].len + 1;
+    memset(st[cur].next, -1, sizeof(st[cur].next));
+
+    int p = last;
+
+    while (p != -1 && st[p].next[c] == -1)
+    {
+        st[p].next[c] = cur;
+        p = st[p].link;
+    }
+
+    if (p == -1)
+    {
+        st[cur].link = 0;
+    }
+    else
+    {
+        int q = st[p].next[c];
+
+        if (st[p].len + 1 == st[q].len)
+        {
+            st[cur].link = q;
+        }
+        else
+        {
+            int clone = sz++;
+
+            st[clone] = st[q];
+            st[clone].len = st[p].len + 1;
+
+            while (p != -1 && st[p].next[c] == q)
+            {
+                st[p].next[c] = clone;
+                p = st[p].link;
+            }
+
+            st[q].link = clone;
+            st[cur].link = clone;
+        }
+    }
+
+    last = cur;
+}
+
+int main()
+{
+    string s;
+    cin >> s;
+
+    init();
+
+    for (char ch : s)
+    {
+        extend(ch);
+    }
+
+    cout << "状态数量：" << sz << endl;
+
+    return 0;
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
