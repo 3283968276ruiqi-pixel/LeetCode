@@ -240,6 +240,187 @@ TreeNode* Build(string& post, string& in,
     return root;
 }
 ```
+## 26.11.10 今日重点：二叉树中的递归、树的高度、双指针递归、镜像判断、全局变量
+递归可以根据题目需要决定是否接收递归返回值，如果函数本身不是void类型的，若题目不需要也可以不接收返回值
+
+### LeetCode 94:二叉树的中序遍历
+给定一个二叉树的根节点 root，返回它的中序遍历结果。
+
+解题思路：**DFS递归**，使用一个vector<int>保存遍历结果，通过辅助函数递归访问左右子树。或者通过**栈**
+
+执行顺序：
+- 判断当前节点是否为空
+- 递归遍历左子树
+- 将当前节点的值加入数组
+- 递归遍历右子树
+- 返回遍历结果
+```
+class Solution
+{
+public:
+    vector<int> order;
+
+    void inorder(TreeNode* root)
+    {
+        if (root == nullptr)
+            return;
+
+        inorder(root->left);
+
+        order.push_back(root->val);
+
+        inorder(root->right);
+    }
+
+    vector<int> inorderTraversal(TreeNode* root)
+    {
+        order.clear();
+        inorder(root);
+        return order;
+    }
+};
+```
+如果数组order的长度不固定，就不需要初始的时候写成order(100,0),后续有需要添加的话可以通过order.push_back(x)
+
+### LeetCode 104：二叉树的最大深度
+给定一个二叉树的根节点 root，返回该树的最大深度。
+最大深度是从根节点到最远叶子节点的最长路径上的节点数量。
+
+解题思路：采用 DFS 递归。
+对于每个节点，分别计算其左子树和右子树的最大深度，取两者较大值，再加上当前节点本身。
+```
+int maxDepth(TreeNode* root)
+{
+    if (root == nullptr)
+        return 0;
+
+    int left = maxDepth(root->left);
+    int right = maxDepth(root->right);
+
+    return 1 + max(left, right);
+}
+```
+### LeetCode 226：翻转二叉树
+给定一棵二叉树的根节点 root，将整棵二叉树翻转，并返回根节点。
+翻转要求：交换每个节点的左子树和右子树。
+
+解题思路:
+采用 DFS 递归。
+核心操作是交换当前节点的左右孩子指针，然后递归翻转左右子树。
+
+```
+class Solution
+{
+public:
+    TreeNode* invertTree(TreeNode* root)
+    {
+        if (root == nullptr)
+            return nullptr;
+
+        TreeNode* temp = root->left;
+
+        root->left = root->right;
+        root->right = temp;
+
+        invertTree(root->left);
+        invertTree(root->right);
+
+        return root;
+    }
+};
+```
+这里利用递归的时候就没有接收返回值
+
+### LeetCode 101：对称二叉树
+给定一棵二叉树的根节点 root，判断它是否轴对称。
+对称的本质：左子树和右子树互为镜像。
+
+解题思路：
+采用 DFS 递归，使用两个指针同时比较左右子树。
+```
+class Solution
+{
+public:
+    bool isMirror(TreeNode* left, TreeNode* right)
+    {
+        if (left == nullptr && right == nullptr)
+            return true;
+
+        if (left == nullptr || right == nullptr)
+            return false;
+
+        if (left->val != right->val)
+            return false;
+
+        return isMirror(left->left, right->right)
+            && isMirror(left->right, right->left);
+    }
+
+    bool isSymmetric(TreeNode* root)
+    {
+        if (root == nullptr)
+            return true;
+
+        return isMirror(root->left, root->right);
+    }
+};
+```
+
+### LeetCode 543：二叉树的直径
+给定一棵二叉树，计算其直径。
+二叉树的直径是任意两个节点之间最长路径的边数。
+注意：最长路径不一定经过根节点。
+
+解题思路:
+采用 DFS 递归。
+利用第104题的思路计算每个节点的左右子树最大深度。
+对于每个节点，计算经过该节点的路径长度：
+当前节点的直径 = 左子树深度 + 右子树深度
+
+最重要的是：使用**全局变量ans保存目前找到的最大直径**
+```
+class Solution
+{
+public:
+    int ans = 0;
+
+    int Depth(TreeNode* root)
+    {
+        if (root == nullptr)
+            return 0;
+
+        int left = Depth(root->left);
+        int right = Depth(root->right);
+
+        ans = max(ans, left + right);
+
+        return 1 + max(left, right);
+    }
+
+    int diameterOfBinaryTree(TreeNode* root)
+    {
+        Depth(root);
+        return ans;
+    }
+};
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
